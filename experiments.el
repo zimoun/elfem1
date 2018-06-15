@@ -1,7 +1,6 @@
 
-
-(require 'complex)
-(require 'list)
+(load-file "./complex.el")
+(load-file "./list.el")
 
 
 (defun f (x)
@@ -20,3 +19,7 @@
 (setq l2 (number-sequence 2 6))
 
 (setq L1 l1)
+
+(defun f (x) (* 2 x))
+(defun ff (x) (* x x))
+(defun g (fn x) (funcall fn (+ 1 x)))

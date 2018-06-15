@@ -6,9 +6,20 @@
   (do/compile)
   (do/test))
 
+(defun redo/all ()
+  (interactive)
+  (do/clean)
+  (do/all))
+
 (defun do/compile ()
   (interactive)
   (byte-recompile-directory "." 0))
+
+(defun redo/compile ()
+  (interactive)
+  (do/clean)
+  (do/compile))
+
 
 (defun do/test ()
   (interactive)

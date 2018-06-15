@@ -10,16 +10,26 @@ and IMAG _is_ (car (cdr (complex REAL IMAG))).
 
 (see `real' and `imag')
 "
-  (list real imag))
+  (list (float real) (float imag)))
 
 (defun complex/which-part (cplx i)
   "See `real' or `imag'.
 
 Refactorization."
-  (let ((typeof (type-of cplx)))
-    (if (eq typeof 'cons)
-        (nth i cplx)
-      cplx)))
+  ;; instead to compare using `type-of'
+  ;; should be used: `consp' or `intergerp' or `floatp'
+  (let ((typeof (type-of cplx))
+        val)
+    (cond
+     ((eq typeof 'cons)
+      (nth i cplx))
+     ((or
+       (eq typeof 'integer)
+       (eq typeof 'float))
+      (if (= i 0)
+          (float cplx)
+        0.0))
+     )))
 
 (defun real (cplx)
   "Return real part. (see `complex')"
@@ -31,7 +41,7 @@ Refactorization."
 
 
 (defun complex/add (a b)
-  "Return the complex addition A+B.
+  "Return the complex addition: A+B.
 
 Note that this obviously commutes.
 (complex/add a b) _equivalent_ (complex/add b a)
@@ -46,7 +56,7 @@ Note that this obviously commutes.
     ))
 
 (defun complex/mul (a b)
-  "Return the complex multiplication A*B.
+  "Return the complex multiplication: A*B.
 
 Note that this obviously commutes.
 (complex/mul a b) _equivalent_ (complex/mul b a)
