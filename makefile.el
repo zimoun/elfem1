@@ -3,8 +3,11 @@
 
 (defun do/all ()
   (interactive)
-  (do/compile)
-  (do/test))
+  (let ((that (make-progress-reporter "All...")))
+    (do/compile)
+    (message "")
+    (do/test)
+    (progress-reporter-done that)))
 
 (defun redo/all ()
   (interactive)
@@ -13,7 +16,10 @@
 
 (defun do/compile ()
   (interactive)
-  (byte-recompile-directory "." 0))
+  (let ((that (make-progress-reporter "Compiling...")))
+    (byte-recompile-directory "." 0)
+    (message "")
+    (progress-reporter-done that)))
 
 (defun redo/compile ()
   (interactive)
@@ -23,14 +29,18 @@
 
 (defun do/test ()
   (interactive)
-  (require 'ert)
-  (require 'tests)
-  (if noninteractive
-      (ert-run-tests-batch-and-exit)
-    (ert-run-tests-interactively t)))
+  (let ((that (make-progress-reporter "Testing...")))
+    (require 'ert)
+    (require 'tests)
+    (if noninteractive
+        (ert-run-tests-batch)
+      (ert-run-tests-interactively t))
+    (progress-reporter-done that)))
 
 
 (defun do/clean ()
   (interactive)
-  (mapc 'delete-file
-        (directory-files "./" nil ".+\\.elc$")))
+  (let ((that (make-progress-reporter "Cleaning...")))
+    (mapc 'delete-file
+          (directory-files "./" nil ".+\\.elc$"))
+    (progress-reporter-done that)))

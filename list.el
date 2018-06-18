@@ -1,4 +1,5 @@
 
+
 (defun get-first (list)
   "Return first element of LIST.
 
@@ -111,10 +112,11 @@ Do not know about memory cost."
 
 (defun increase (x y) (< x y))
 (defun decrease (x y) (> x y))
+(defun tmp/compare (x y) "ugly Hack around scope" (> x y))
 
-(defun insert-element (list elt &optional tmp/compare)
+(defun insert-element (list elt &optional cmp)
   "Insert ELT to LIST
-such that the right neighbor of ELT satisfies the `predicate' TMP/COMPARE.
+such that the right neighbor of ELT satisfies the `predicate' CMP.
 
 Expects a properly a nil-terminated list.
 
@@ -134,21 +136,20 @@ or
 WARNING: one internal function named `tmp/compare' is defined
 and the remains the GLOBAL scope."
   (let ((head (car list))
-        (tail (cdr list))
-        tmp/compare)
+        (tail (cdr list)))
     ;; be careful !!
-    ;; the function tmp/compare is GLOBAL
+    ;; the function `tmp/compare' is GLOBAL
     ;; and remains in the scoping (see `dynamical binding')
-    (when (eq nil tmp/compare)
-        (defun tmp/compare (x y) (increase x y))
-        ;(setq tmp/compare (lambda (x y) (increase x y)))
+    (makunbound 'tmp/compare)
+    (if (eq nil cmp)
+        (setq tmp/compare (lambda (x y) (increase x y)))
       (setq tmp/compare (lambda (x y) (funcall cmp x y))))
 
     (if (eq nil tail)
-        (if (tmp/compare elt head)
+        (if (funcall tmp/compare elt head)
             (list elt head)
           (list head elt))
-      (if (tmp/compare elt head)
+      (if (funcall tmp/compare elt head)
           (push elt list)
         (join (list head) (insert-element tail elt 'tmp/compare))
         ))
@@ -159,23 +160,13 @@ and the remains the GLOBAL scope."
 
 Expects a properly a nil-terminated list.
 
-WARNING: one internal function named `compare' is defined
-and the remains the GLOBAL scope.
-
 (see `insert-element')"
   (let ((head (car list))
-        (tail (cdr list))
-        compare)
-    ;; be careful !!
-    ;; the function compare is GLOBAL
-    ;; and remains in the scoping (see `dynamical binding')
-    (if (eq nil cmp)
-        (setq compare (lambda (x y) (increase x y)))
-      (setq compare (lambda (x y) (funcall cmp x y))))
+        (tail (cdr list)))
 
     (if (eq nil tail)
         (list head)
-      (insert-element (sort-by-insertion tail) head 'compare))
+      (insert-element (sort-by-insertion tail) head))
     ))
 
 
