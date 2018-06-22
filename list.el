@@ -11,7 +11,7 @@
 
 Pure Lisp implementation, using only `car' and `cdr'.
 Expects a properly nil-terminated list.
-The function recursively walks through LIST until the last `cons' cell.
+The function recursively walks through LIST until the nil `cons' cell.
 
 (see `last' for efficient built-in implementation)
 (e.g., (get-last list) _equivalent_ (car (last list)))
@@ -20,6 +20,28 @@ The function recursively walks through LIST until the last `cons' cell.
       (car list)
     (get-last (cdr list))
     ))
+
+(defun get-length (list &optional accu)
+  "Return the length of LIST.
+
+Pure Lisp implementation, using only `cdr'.
+Expects a properlu nil-terminated list.
+The function recursively walks through LIST until the nil `cons' cell.
+
+WARNING:
+The number of loop-recursion is limited. Try e.g.,
+  (get-length (number-sequence 0 200))
+See `max-lisp-eval-depth'.
+
+(see `length' for efficient built-in implementation with recursion issue)"
+  (let ((acc accu)
+        (tail (cdr list)))
+    (when (eq nil accu)
+      (setq acc 0))
+    (if (eq nil tail)
+        (+ 1 acc)
+      (get-length tail (+ 1 acc)))
+  ))
 
 (defun reverse-manually (list &optional accu)
   "Reverse LIST.
@@ -31,6 +53,7 @@ Expects a properly nil-terminated list.
 ACCU is by default set to `nil'.
 
 The function recursively walks through LIST pushing each element to ACCU.
+Since the number of loop-recursion is limited, the acceptable length is roughly limited.
 
 (see `reverse' for efficient built-in implementation)
 (see `nreverse' for built-in implementation modifying LIST)"
@@ -88,8 +111,9 @@ The cost is O(number of elements of RLIST). Do not know about memory cost.
 Expects a properly nil-terminated lists.
 
 The function recursively walks through RLIST pushing each element to LIST.
+Therefore, the working RLIST length is limited (see `max-specpdl-size').
 
-(built-in implementation ?) "
+(built-in implementation ?)"
     (let ((last (car rlist))
           (rest (cdr rlist)))
 
@@ -98,16 +122,31 @@ The function recursively walks through RLIST pushing each element to LIST.
       (push-all rest (push last list)))
     ))
 
-(defun join (list1 list2)
+(defun join-strict (list1 list2)
   "Join the nil-terminated lists LIST1 and LIST2
 and so return the joined nil-terminated list.
 
-The function first applies `reverse-manually' then `join-recursively'.
+The function first applies `reverse-manually' then `push-all'.
 Therefore, the cost is O(2 times number of elements of LIST1).
 Do not know about memory cost."
   (let ((rlist (reverse-manually list1))
         (list list2))
     (push-all rlist list)
+    ))
+
+(defun join (list1 list2 &rest lists)
+  "Join several nil-terminated lists.
+
+LISTS allows to join more than only 2 lists, e.g.,
+  (join l1 l2 l3 l4)
+
+The function applies `join-strict' to LIST1 and LIST2,
+and then recursively applies itself to this new joined list with `pop'-ing LISTS."
+    (let ((joined (join-strict list1 list2))
+          (list (pop lists)))
+      (if (eq nil list)
+          joined
+        (apply 'join joined list lists))
     ))
 
 (defun increase (x y) (< x y))
@@ -163,10 +202,17 @@ Expects a properly a nil-terminated list.
 (see `insert-element')"
   (let ((head (car list))
         (tail (cdr list)))
+    ;; be careful !!
+    ;; the function `tmp/compare' is GLOBAL
+    ;; and remains in the scoping (see `dynamical binding')
+    (makunbound 'tmp/compare)
+    (if (eq nil cmp)
+        (setq tmp/compare (lambda (x y) (increase x y)))
+      (setq tmp/compare (lambda (x y) (funcall cmp x y))))
 
     (if (eq nil tail)
         (list head)
-      (insert-element (sort-by-insertion tail) head))
+      (insert-element (sort-by-insertion tail 'tmp/compare) head 'tmp/compare))
     ))
 
 

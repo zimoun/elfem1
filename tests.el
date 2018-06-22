@@ -31,14 +31,26 @@
 (ert-deftest list ()
   "Test my `list' functions."
   (let ((l1 (list 1 2 3 4 5 6 7 8 9 10))
-        (l2 (list -1 -2 -3)))
+        (l2 (list -1 -2 -3))
+        (l3 (list -10 -20 -30)))
     (should (equal (get-first l1) 1))
     (should (equal (get-last l1) 10))
     (should (equal (reverse-manually l1) (list 10 9 8 7 6 5 4 3 2 1)))
     (should (equal (append-element l1 -1) (list 1 2 3 4 5 6 7 8 9 10 -1)))
-    (should (equal (join l1 l2) (list 1 2 3 4 5 6 7 8 9 10 -1 -2 -3)))
     :expected-result :failed
     (equal (append-element l1 -3) (list 1 2 3 4 5 6 7 8 9 10 -2))
+    (should (equal (join l1 l2) (list 1 2 3 4 5 6 7 8 9 10 -1 -2 -3)))
+    (should (equal (join l1 l2 l3)
+                   (list 1 2 3 4 5 6 7 8 9 10 -1 -2 -3 -10 -20 -30)))
+    (should (equal (join l3 l1 l2)
+                   (list -10 -20 -30 1 2 3 4 5 6 7 8 9 10 -1 -2 -3)))
+    (should (equal (get-first (join l1 l2)) (get-first l1)))
+    (should (equal (get-last (join l1 l2)) (get-last l2)))
+    (should (equal (get-length l1) 10))
+    (should (equal (get-length l2) 3))
+    (should (equal
+             (get-length (join l1 l2))
+             (+ (get-length l1) (get-length l2))))
     ))
 
 

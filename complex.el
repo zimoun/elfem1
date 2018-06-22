@@ -119,8 +119,8 @@ Note that real^2 and imag^2 do not make any sense in Lisp.
 
 (see `complex')."
   (let ((num (complex/mul a (conj b)))
-        (iden (/ 1 (complex/abs2 b))))
-    (complex/mul num iden)
+        (inv-den (/ 1 (complex/abs2 b))))
+    (complex/mul inv-den num)
     ))
 
 (defun complex/pow (cplx n &optional accu)
@@ -130,11 +130,15 @@ ACCU is set to 1 by default.
 It corresponds to the value of the tail-recursion.
 Even if Emacs Lisp does not optimize the tail-recursion.
 
+WARNING:
+Even if Emacs is not optimized --at all-- for computations of loop-recursion.
+Try e.g., (complex/pow (complex 1 0) 195)
+or increase 195 a bit, and then depth will exceed `max-lisp-eval-depth'.
+
 (see `complex' and `complex/mul')"
-  (let (acc)
-    (if (eq nil accu)
-        (setq acc (complex 1 0))
-      (setq acc accu))
+  (let ((acc accu))
+    (when (eq nil accu)
+        (setq acc (complex 1 0)))
     (if (equal n 0)
         acc
       (complex/pow cplx (- n 1) (complex/mul cplx acc)))
