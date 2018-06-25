@@ -30,7 +30,7 @@ The function recursively walks through LIST until the nil `cons' cell.
 
 WARNING:
 The number of loop-recursion is limited. Try e.g.,
-  (get-length (number-sequence 0 200))
+  (get-length (number-sequence 0 (/ max-lisp-eval-depth 3)))
 See `max-lisp-eval-depth'.
 
 (see `length' for efficient built-in implementation with recursion issue)"
@@ -54,6 +54,7 @@ ACCU is by default set to `nil'.
 
 The function recursively walks through LIST pushing each element to ACCU.
 Since the number of loop-recursion is limited, the acceptable length is roughly limited.
+(see `max-lisp-eval-depth' and `(elisp)')
 
 (see `reverse' for efficient built-in implementation)
 (see `nreverse' for built-in implementation modifying LIST)"
@@ -111,7 +112,7 @@ The cost is O(number of elements of RLIST). Do not know about memory cost.
 Expects a properly nil-terminated lists.
 
 The function recursively walks through RLIST pushing each element to LIST.
-Therefore, the working RLIST length is limited (see `max-specpdl-size').
+Therefore, the working RLIST length is limited (see `max-lisp-eval-depth').
 
 (built-in implementation ?)"
     (let ((last (car rlist))
@@ -205,10 +206,28 @@ Expects a properly a nil-terminated list.
     ;; be careful !!
     ;; the function `tmp/compare' is GLOBAL
     ;; and remains in the scoping (see `dynamical binding')
-    (makunbound 'tmp/compare)
-    (if (eq nil cmp)
-        (setq tmp/compare (lambda (x y) (increase x y)))
-      (setq tmp/compare (lambda (x y) (funcall cmp x y))))
+(message "head=%f" head)
+
+;(message "%S" (funcall cmp 1 2))
+
+(message "%S is %S | %S is %S" 'cmp cmp '(fboundp 'tmp/compare) (fboundp 'tmp/compare))
+(message "symbol: %S" (symbol-function 'tmp/compare))
+(message "1 < 2 : %S" (tmp/compare 1 2))
+
+(fmakunbound 'tmp/compare)
+(message "%S is %S" '(fboundp 'tmp/compare) (fboundp 'tmp/compare))
+
+;(message "%S" (funcall cmp 1 2))
+
+(if (eq nil cmp)
+    (progn
+      (fset 'tmp/compare 'increase) ;(lambda (x y) (increase x y)))
+      (message "cmp is %S " cmp)
+      (message "increase? %S" (symbol-function 'tmp/compare)))
+      (fset 'tmp/compare '(lambda (x y) (funcall cmp x y))))
+
+(message "%S" (symbol-function 'tmp/compare))
+(message "1 < 2 : %S" (tmp/compare 1 2))
 
     (if (eq nil tail)
         (list head)

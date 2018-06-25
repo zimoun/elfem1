@@ -132,8 +132,8 @@ Even if Emacs Lisp does not optimize the tail-recursion.
 
 WARNING:
 Even if Emacs is not optimized --at all-- for computations of loop-recursion.
-Try e.g., (complex/pow (complex 1 0) 195)
-or increase 195 a bit, and then depth will exceed `max-lisp-eval-depth'.
+Try e.g., (complex/pow (complex 1 0) (\ max-lisp-eval-depth 3))
+or decrease 3 a bit, and then depth will exceed `max-lisp-eval-depth'.
 
 (see `complex' and `complex/mul')"
   (let ((acc accu))
