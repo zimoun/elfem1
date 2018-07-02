@@ -1,6 +1,8 @@
 
 (load-file "./complex.el")
 (load-file "./list.el")
+(load-file "./vector.el")
+
 
 
 (defun f (x)
@@ -66,5 +68,7 @@
 (defun f (list &optional g acc)
   list)
 
-(defun push-> (elt list)
-  (cons elt list))
+(setq L (list 0 1 2 3 4 5 6 7 8 9))
+
+(defun addone (x)
+  (+ x 1))

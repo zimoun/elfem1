@@ -1,18 +1,22 @@
 
 
 (defun complex (real imag)
-  "Return the list of 2 elements.
+  "Return the dotted paired list of 2 elements.
 
 The first element is REAL.
 The second element is IMAG.
 Both are converted to float datatype.
 
 i.e., REAL _is_ (car (complex (REAL IMAG)))
-and IMAG _is_ (car (cdr (complex REAL IMAG))).
+and IMAG _is_ (cdr (complex REAL IMAG))).
 
 (see `real' and `imag')
 "
-  (list (float real) (float imag)))
+  (cons (float real) (float imag)))
+
+(defun complex/ify (real)
+  "See `complex'"
+  (complex real 0))
 
 (defun complex/which-part (cplx i)
   "Generic function used by `real' or `imag'.
@@ -20,11 +24,12 @@ and IMAG _is_ (car (cdr (complex REAL IMAG))).
 Robust enough to even work with interger and float datatype."
   ;; instead to check using `type-of'
   ;; should be used: `consp' or `intergerp' or `floatp'
-  (let ((typeof (type-of cplx))
-        val)
+  (let ((typeof (type-of cplx)))
     (cond
      ((eq typeof 'cons)
-      (nth i cplx))
+      (if (= i 0)
+          (car cplx)
+        (cdr cplx)))
      ((or
        (eq typeof 'integer)
        (eq typeof 'float))
