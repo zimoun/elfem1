@@ -1,4 +1,4 @@
-(require 'list)
+(defvar vector/default-number-of-elements 5)
 
 (defun vector/make-linspace-real (start stop &optional n accu)
   "Return linspace range from START to STOP, both included.
@@ -13,12 +13,12 @@ By default N is set to 5.
     (when (eq nil accu)
       (setq acc (list stop)))
     (if (eq nil n)
-        (setq num 5.0)
+        (setq num (float vector/default-number-of-elements))
       ;; be careful by the true division:
       ;; (/ 1 2) returns 0 but (/ 1 2.0) return 0.5
       (setq num (float n)))
 
-    (setq step (/ (- stop start) num))
+    (setq step (/ (- stop start) (- num 1)))
     (setq newstop (- stop step))
 
     (if (>= start stop)
@@ -61,9 +61,15 @@ and the returned value corresponds to the inner prodcut of the common length."
       (vector/dot xtail ytail val))
   ))
 
+(defun vector/abs (vec)
+  (map 'complex/abs vec)
+  )
+
 
 (defun vector/norm2 (x)
   (vector/dot x x))
 
+(defun vector/norm (x)
+  (math/sqrt (vector/norm2 x)))
 
 (provide 'vector)

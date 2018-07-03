@@ -10,8 +10,7 @@ Both are converted to float datatype.
 i.e., REAL _is_ (car (complex (REAL IMAG)))
 and IMAG _is_ (cdr (complex REAL IMAG))).
 
-(see `real' and `imag')
-"
+(see `real' and `imag')"
   (cons (float real) (float imag)))
 
 (defun complex/ify (real)
@@ -96,28 +95,51 @@ Note that this obviously commutes.
 (defun complex/cabs2 (cplx)
   "Return the complex squared modulus.
 
+(+ `real'^2 `imag'^2) = (* CPLX (`conj' CPLX))
+
+Note that real^2 and imag^2 do not make any sense in Lisp.
+
 (see `complex' and `complex/mul' and `conj')"
   (complex/mul cplx (conj cplx)))
 
 (defun complex/abs2 (cplx)
-  "Return the squared modulus.
+  "Return the real squared modulus.
 
-(+ `real'^2 `imag'^2)
-
-Note that real^2 and imag^2 do not make any sense in Lisp.
-
-(see `complex' and `complex/cabs2')"
+(see `complex/cabs2' and `real')"
   (real (complex/cabs2 cplx)))
+
+(defun complex/abs-naive (cplx)
+  "Return the modulus.
+
+Evaluate (`math/sqrt' `complex/abs2')
+
+Note that the recursive computation of the square root is always done,
+even if CPLX is purely `real' or purely `imag'-inary.
+(see `complex/abs')"
+  (math/sqrt (complex/abs2 cplx)))
+
+(defvar complex/numerical-zero 1e-5
+  "Fix the value of number that are skipped,
+because they are considered as numerical noise.")
 
 (defun complex/abs (cplx)
   "Return the modulus.
 
-(`sqrt' (+ `real'^2 `imag'^2))
-
-Note that real^2 and imag^2 do not make any sense in Lisp.
-
-(see `complex' and `complex/abs2')"
-  (sqrt (complex/abs2 cplx)))
+If `real' or `imag' are less than `complex/numerical-zero'
+Then return the well-adapted absolute value computed by `math/abs',
+Else apply `complex/abs-naive'."
+  (let ((re (math/abs (real cplx)))
+        (im (math/abs (imag cplx))))
+    (cond
+     ((< im complex/numerical-zero)
+      re)
+     ((< re complex/numerical-zero)
+      im)
+     ((and
+       (>= im complex/numerical-zero)
+       (>= re complex/numerical-zero))
+      (complex/abs-naive cplx)))
+    ))
 
 (defun complex/div (a b)
     "Return the complex multiplication: A/B.
@@ -128,10 +150,10 @@ Note that real^2 and imag^2 do not make any sense in Lisp.
     (complex/mul inv-den num)
     ))
 
-(defun complex/pow (cplx n &optional accu)
+(defun complex/pow (cplx n &optional accumulate)
   "Compute CPLX power N.
 
-ACCU is set to 1 by default.
+ACCUMULATE is set to 1 by default.
 It corresponds to the value of the tail-recursion.
 Even if Emacs Lisp does not optimize the tail-recursion.
 
@@ -141,13 +163,12 @@ Try e.g., (complex/pow (complex 1 0) (\ max-lisp-eval-depth 3))
 or decrease 3 a bit, and then depth will exceed `max-lisp-eval-depth'.
 
 (see `complex' and `complex/mul')"
-  (let ((acc accu))
-    (when (eq nil accu)
+  (let ((acc accumulate))
+    (when (eq nil accumulate)
         (setq acc (complex 1 0)))
     (if (equal n 0)
         acc
       (complex/pow cplx (- n 1) (complex/mul cplx acc)))
     ))
-
 
 (provide 'complex)

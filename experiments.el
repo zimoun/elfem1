@@ -2,6 +2,8 @@
 (load-file "./complex.el")
 (load-file "./list.el")
 (load-file "./vector.el")
+(load-file "./math.el")
+
 
 
 
@@ -19,6 +21,7 @@
 
 (setq l1 (number-sequence 7 12))
 (setq l2 (number-sequence 2 6))
+(setq l3 (number-sequence -6 -1))
 
 (setq L1 l1)
 (setq L (join l1 l2))
@@ -72,3 +75,13 @@
 
 (defun addone (x)
   (+ x 1))
+
+(defun get-length~loop (list)
+  "ya"
+  (let ((head (car list))
+        (tail (cdr list))
+        (size 1))
+    (while (not (eq tail nil))
+      (setq size (+ size 1))
+      (setq tail (cdr tail)))
+    size))
