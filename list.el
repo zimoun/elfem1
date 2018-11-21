@@ -226,12 +226,12 @@ and then recursively applies itself to this new joined list with popping the res
     ))
 
 
-(defun map (function list &optional accumulate)
+(defun map (function list &optional one-elt accumulate)
   "Map FUNCTION to LIST.
 
 The argument LIST represents a nil-terminated list.
-The argument FUNCTION needs to be a symbol of function that takes one
-argument and returns one element.
+The argument FUNCTION needs to be a symbol of function that takes
+arguments and returns one element.
 
 The function recursively walks through the LIST,
 and applies FUNCTION to each element.
@@ -239,25 +239,42 @@ The results are collected in ACCUMULATE (by defaut set to `nil'),
 therefore, the resulting list is reversed.
 (see `map-reverse' or `reverse-map')
 
+If ONE-ELT is set to `t',
+then it allows to consider one element of LIST
+as only one object passed to FUNCTION,
+else, as expanded elements passed to FUNCTION.
+(by defaut set to `nil')
 
 Example:
 
 (setq L (list 0 1 2 3 4))
 (defun +one (x) (+ x 1))
 (map '+one L)
---> (5 4 3 2 1)"
+--> (5 4 3 2 1)
+
+(setq ll (list (list 1 2) (list 2 3) (list 3 4) (list 4 5))
+(map '(lambda (x) (push-> 42 x)) ll t)
+--> ((42 4 5) (42 3 4) (42 2 3) (42 1 2))
+
+(map '(lambda (x y) (+ x y)) ll)
+--> (9 7 5 3)"
   (let ((acc accumulate)
         (head (car list))
         (tail (cdr list))
         ret val)
 
-    (setq val (funcall function head))
+     (if (listp head)
+       (if (eq one-elt nil)
+          (setq val (apply function head))
+         (setq val (funcall function head)))
+       (setq val (funcall function head)))
+
     (setq ret (push-> val acc))
     (setq acc ret)
 
     (if (eq tail nil)
         acc
-      (map function tail acc))
+      (map function tail one-elt acc))
     ))
 
 (defun map-reverse (function list)
@@ -418,7 +435,13 @@ Do not use this function, prefer `combine'.
 
 UGLY has to be set to `nil' at the first call (intial recursion term),
 then it is internally turned to `t'. It is required by
-`combine-strict-reversed' to properly handle the edge cases."
+`combine-strict-reversed' to properly handle the edge cases.
+
+Example:
+
+(setq l1 (list 1 2 3))
+(setq l2 (list -1 -2 -3))
+(combine-reversed nil l1 l2 l1 l2)"
   (let ((combined (combine-strict-reversed list1 list2 nil ugly))
         (list (car lists))
         (rest (cdr lists)))
@@ -440,7 +463,7 @@ Example:
 (setq l2 (list -1 -2 -3))
 (combine l1 l2 l1 l2)
 --> ((1 -1 1 -1) (2 -2 2 -2) (3 -3 3 -3))"
-  (map 'reverse-recursive-lisp (apply 'combine-reversed nil list1 list2 lists)))
+  (map 'reverse-recursive-lisp (apply 'combine-reversed nil list1 list2 lists) t))
 
 
 

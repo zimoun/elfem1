@@ -166,9 +166,10 @@ or decrease 3 a bit, and then depth will exceed `max-lisp-eval-depth'.
   (let ((acc accumulate))
     (when (eq nil accumulate)
         (setq acc (complex 1 0)))
-    (if (equal n 0)
+    (if (= n 0)
         acc
       (complex/pow cplx (- n 1) (complex/mul cplx acc)))
     ))
+
 
 (provide 'complex)

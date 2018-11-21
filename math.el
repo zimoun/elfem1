@@ -1,3 +1,5 @@
+(defvar math/pi 3.141592653589793)
+(defvar math/exp 2.718281828459045)
 
 (defun math/abs (number)
   "Return absolute value of the NUMBER.
@@ -61,4 +63,14 @@ If BUILT-IN is not `nil', then `sqrt' is applied for any NUMBER."
       (math/sqrt-recursive-lisp number))
     ))
 
-(provide 'math)
+
+(defun math/pow-int (number power &optional accumulate)
+  (let ((acc accumulate))
+    (when (eq accumulate nil)
+      (setq acc 1.0))
+    (if (<= power 0)
+        acc
+      (math/pow-int number (- power 1) (* number acc)))
+    ))
+
+(defun math/exp (number))

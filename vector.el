@@ -32,7 +32,7 @@ By default N is set to 5.
 (see `vector/make-linspace-real')
 (see `complex/ify')
 (see `map')"
-  (map 'complex/ify (vector/make-linspace-real start stop n)))
+  (map-reverse 'complex/ify (vector/make-linspace-real start stop n)))
 
 (defun vector/dot (x y &optional accu)
   "Compute the inner product and return it as `complex'.
@@ -61,9 +61,12 @@ and the returned value corresponds to the inner prodcut of the common length."
       (vector/dot xtail ytail val))
   ))
 
+(defun vector/dott (x y)
+  (reduce 'complex/add
+          (map 'complex/mul (combine-reversed nil x y))))
+
 (defun vector/abs (vec)
-  (map 'complex/abs vec)
-  )
+  (map 'complex/abs vec))
 
 
 (defun vector/norm2 (x)
