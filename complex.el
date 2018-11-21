@@ -13,9 +13,20 @@ and IMAG _is_ (cdr (complex REAL IMAG))).
 (see `real' and `imag')"
   (cons (float real) (float imag)))
 
-(defun complex/ify (real)
-  "See `complex'"
-  (complex real 0))
+;; (defun complex/ify (real)
+;;   "See `complex'"
+;;   (complex real 0))
+
+(defun complex/ify (number)
+  (let ((typeof (type-of number)))
+    (cond
+     ((eq typeof 'cons)
+      number)
+     ((or
+      (eq typeof 'integer)
+      (eq typeof 'float))
+      (complex (float number) 0))
+    )))
 
 (defun complex/which-part (cplx i)
   "Generic function used by `real' or `imag'.
@@ -197,3 +208,5 @@ or decrease 3 a bit, and then depth will exceed `max-lisp-eval-depth'.
         cur
        (complex/exp cplx tol (+ n 1) cur))
     ))
+
+(provide 'complex)

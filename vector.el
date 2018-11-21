@@ -67,7 +67,7 @@ and VAL is set to 1.
 (see `map')"
   ;; `map-reverse' should be used, as in `vector/make-linspace'
   ;; but, since it is only VAL, it is an useless extra cost.
-  (map 'complex/ify (vector/make-value-real val n)))
+  (map 'complex/ify (vector/make-value-real n value)))
 
 ;; (defun vector/make-ones (&optional n value)
 ;;   (let ((val value))
@@ -119,6 +119,42 @@ Example:
 
 (defun vector/make-ith (i &optional n)
   (map-reverse 'complex/ify (vector/make-ith-real i n)))
+
+
+(defun vector/make-ith-val-real (i val &optional n accumulate)
+  "Return a vector of length N filled by zeros,
+except at the Ith which is filled by 1.
+
+Index I starts at one.
+
+N is set by default to `vector/default-number-of-elements'
+ACCUMULATE is optionnal and set by default to `nil'.
+
+
+Example:
+
+(vector/make-ith-real 2 7)
+--> (0 1 0 0 0 0 0)
+
+(see `push->')"
+  (let ((acc accumulate)
+        (num n)
+        (vall 0))
+    (when (eq num nil)
+      (setq num vector/default-number-of-elements))
+    (when (eq i num)
+      (setq vall val))
+    (when (eq acc nil)
+      (setq acc '()))
+    (setq acc (push-> vall acc))
+    (if (eq num 1)
+        acc
+      (vector/make-ith-val-real i val (- num 1) acc))
+    ))
+
+(defun vector/make-ith-val (i val &optional n)
+  (map-reverse 'complex/ify (vector/make-ith-val-real i val n) t))
+
 
 (defun vector/dot-ouch (x y &optional accu)
   "Compute the inner product and return it as `complex'.
@@ -175,6 +211,25 @@ Example:
   (vector/dot x x))
 
 (defun vector/norm (x)
-  (math/sqrt (vector/norm2 x)))
+  (math/sqrt (complex/real (vector/norm2 x))))
 
-(provide 'vector)
+(defun vector/set-i (vec i value &optional accumulate current)
+  (let ((acc accumulate)
+        (cur current)
+        (val (car vec)))
+
+    (when (eq cur nil)
+      (setq cur 1))
+
+    (when (eq i cur)
+      (setq val value))
+
+    (setq acc (push-> val acc))
+
+    (if (eq (cdr vec) nil)
+        (map 'complex/ify acc t)
+      (vector/set-i (cdr vec) i value acc (+ cur 1)))
+    ))
+
+(defun vector/get-i (vec index)
+  (get-ith vec index))

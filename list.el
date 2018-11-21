@@ -67,6 +67,27 @@ The function recursively walks through LIST until the nil `cons' cell.
     (get-last (cdr list))
     ))
 
+(defun get-ith (list i &optional tmp)
+  "Return the I-th element of LIST.
+
+Pure Lisp implementation, using only `cdr' and `car'.
+Expects a properly nil-terminated list.
+The function recursively walks through LIST until the nil `cons' cell.
+
+TMP is set by default to 1.
+
+WARNING:
+The number of loop-recursion is limited. Try e.g.,
+  (get-length (number-sequence 0 (/ max-lisp-eval-depth 3)))
+See `max-lisp-eval-depth'."
+  (let ((j tmp))
+    (when (eq j nil)
+      (setq j 1))
+    (if (eq i j)
+        (car list)
+      (get-ith (cdr list) i (+ j 1)))
+    ))
+
 (defun get-length (list &optional accumulate)
   "Return the length of LIST.
 
