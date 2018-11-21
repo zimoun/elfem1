@@ -34,7 +34,7 @@ By default N is set to 5.
 (see `map')"
   (map-reverse 'complex/ify (vector/make-linspace-real start stop n)))
 
-(defun vector/dot (x y &optional accu)
+(defun vector/dot-ouch (x y &optional accu)
   "Compute the inner product and return it as `complex'.
 
 Work for all datatypes supported by `complex'.
@@ -58,15 +58,31 @@ and the returned value corresponds to the inner prodcut of the common length."
          (eq nil xtail)
          (eq nil ytail))
         val
-      (vector/dot xtail ytail val))
+      (vector/dot-ouch xtail ytail val))
   ))
 
-(defun vector/dott (x y)
+(defun vector/dot (x y)
+  "Compute by Map/Reduce the inner product and return it as `complex'.
+
+Work for all datatypes supported by `complex'.
+
+If the lists X and Y does not have the same length (see `get-length'),
+then no one warning is raised,
+and the returned value corresponds to the inner prodcut of the common length.
+
+(see `map' and `reduce')
+
+
+Example:
+
+(setq x (vector/make-linspace 1 5))
+(setq y (vector/make-linspace -5 -1))
+(vector/dot x y)"
   (reduce 'complex/add
-          (map 'complex/mul (combine-reversed nil x y))))
+          (map 'complex/mul (combine-reversed x y))))
 
 (defun vector/abs (vec)
-  (map 'complex/abs vec))
+  (map-reverse 'complex/abs vec t))
 
 
 (defun vector/norm2 (x)

@@ -85,3 +85,15 @@
       (setq size (+ size 1))
       (setq tail (cdr tail)))
     size))
+
+(defun f (n &optional step accu)
+  (let ((acc accu)
+        (s step))
+        (when (eq accu nil)
+          (setq acc 0.0))
+        (when (eq step nil)
+          (setq s (/ 1.0 n)))
+        (if (= n 0)
+            acc
+          (f (- n 1) s (+ s acc)))
+        ))

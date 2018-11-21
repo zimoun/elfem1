@@ -277,7 +277,7 @@ Example:
       (map function tail one-elt acc))
     ))
 
-(defun map-reverse (function list)
+(defun map-reverse (function list &optional one-elt)
   "Map FUNCION to LIST.
 
 First, `reverse-recursive-lisp' is applied.
@@ -293,7 +293,7 @@ Example:
 (defun +one (x) (+ x 1))
 (map-reverse '+one L)
 --> (1 2 3 4 5)"
-  (map function (reverse-recursive-lisp list)))
+  (map function (reverse-recursive-lisp list) one-elt))
 
 (defun reverse-map (function list)
   "Map FUNCION to LIST.
@@ -391,7 +391,7 @@ The optionnal parameter ACCUMULATE recursively collects the result.
 
 (see `combine-strict' for non reverse result)
 
-And UGLY is internal parameter used by `combine-reversed'.
+And UGLY is internal parameter used by `combine-reversed-ugly'.
 (by default set to `nil')
 
 
@@ -427,11 +427,10 @@ First, apply `combine-strict-reversed'.
 Then, `reverse-recursive-lisp'."
   (reverse-recursive-lisp (combine-strict-reversed list1 list2)))
 
-(defun combine-reversed (ugly list1 list2 &rest lists)
-  "Extension of `combine-strict-reversed' to arbitrary number of
-  lists.
+(defun combine-reversed-ugly (ugly list1 list2 &rest lists)
+  "Extension of `combine-strict-reversed' to arbitrary number of lists.
 
-Do not use this function, prefer `combine'.
+Do not use this function, prefer `combine-reversed'.
 
 UGLY has to be set to `nil' at the first call (intial recursion term),
 then it is internally turned to `t'. It is required by
@@ -441,14 +440,25 @@ Example:
 
 (setq l1 (list 1 2 3))
 (setq l2 (list -1 -2 -3))
-(combine-reversed nil l1 l2 l1 l2)"
+(combine-reversed-ugly nil l1 l2 l1 l2)"
   (let ((combined (combine-strict-reversed list1 list2 nil ugly))
         (list (car lists))
         (rest (cdr lists)))
     (if (eq list nil)
         combined
-      (apply 'combine-reversed t (reverse-recursive-lisp combined) list rest))
+      (apply 'combine-reversed-ugly t (reverse-recursive-lisp combined) list rest))
     ))
+
+(defun combine-reversed (list1 list2 &rest lists)
+  "Wrapper around `combine-reversed-ugly'
+
+
+Example:
+
+(setq l1 (list 1 2 3))
+(setq l2 (list -1 -2 -3))
+(combine-reversed-ugly nil l1 l2 l1 l2)"
+  (combine-reversed-ugly nil list1 list2 lists))
 
 (defun combine (list1 list2 &rest lists)
   "Combine arbitrary number of nil-terminated lists.
@@ -463,8 +473,7 @@ Example:
 (setq l2 (list -1 -2 -3))
 (combine l1 l2 l1 l2)
 --> ((1 -1 1 -1) (2 -2 2 -2) (3 -3 3 -3))"
-  (map 'reverse-recursive-lisp (apply 'combine-reversed nil list1 list2 lists) t))
-
+  (map 'reverse-recursive-lisp (apply 'combine-reversed list1 list2 lists) t))
 
 
 
