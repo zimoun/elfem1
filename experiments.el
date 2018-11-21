@@ -1,10 +1,9 @@
 
 (load-file "./complex.el")
 (load-file "./list.el")
-(load-file "./vector.el")
 (load-file "./math.el")
-
-
+(load-file "./vector.el")
+(load-file "./matrix.el")
 
 
 (defun f (x)

@@ -1,10 +1,11 @@
+
 (defvar vector/default-number-of-elements 5)
 
 (defun vector/make-linspace-real (start stop &optional n accu)
   "Return linspace range from START to STOP, both included.
 
 The optional parameter N specifies the number of elements in the range.
-By default N is set to 5.
+By default N is set to `vector/default-number-of-elements'.
 
 (see `push->')"
   (let ((acc accu)
@@ -31,8 +32,93 @@ By default N is set to 5.
 
 (see `vector/make-linspace-real')
 (see `complex/ify')
-(see `map')"
+(see `map-reverse')"
   (map-reverse 'complex/ify (vector/make-linspace-real start stop n)))
+
+(defun vector/make-value-real (&optional n value accumulate)
+  "Return vector filled by N VALUEs elements
+
+By default N is set to `vector/default-number-of-elements',
+and VAL is set to 1.
+
+
+(see `push->')"
+  (let ((acc accumulate)
+        (num n)
+        (val value)
+        w)
+    (when (eq val nil)
+      (setq val 1.0))
+    (when (eq num nil)
+      (setq num vector/default-number-of-elements))
+    (when (eq acc nil)
+      (setq acc (list val)))
+    (setq w val)
+    (if (eq num 1)
+        acc
+      (vector/make-value-real (- num 1) w (push-> w acc)))
+    ))
+
+(defun vector/make-value (&optional n value)
+  "Return complexified VALUEs.
+
+(see `vector/make-value-real')
+(see `complex/ify')
+(see `map')"
+  ;; `map-reverse' should be used, as in `vector/make-linspace'
+  ;; but, since it is only VAL, it is an useless extra cost.
+  (map 'complex/ify (vector/make-value-real val n)))
+
+;; (defun vector/make-ones (&optional n value)
+;;   (let ((val value))
+;;     (when (eq value nil)
+;;       (setq val 1))
+;;     (map '(lambda (x) (complex/mul value x)) (vector/make-value-real n))
+;;     ))
+
+(defun vector/make-ones (&optional n)
+  "Return complexified vector filled by 1..
+
+(see `vector/make-value-real')
+(see `complex/ify')
+(see `map')"
+  ;; `map-reverse' should be used, as in `vector/make-linspace'
+  ;; but, since it is only VAL, it is an useless extra cost.
+  (map 'complex/ify (vector/make-value-real n)))
+
+(defun vector/make-ith-real (i &optional n accumulate)
+  "Return a vector of length N filled by zeros,
+except at the Ith which is filled by 1.
+
+Index I starts at one.
+
+N is set by default to `vector/default-number-of-elements'
+ACCUMULATE is optionnal and set by default to `nil'.
+
+
+Example:
+
+(vector/make-ith-real 2 7)
+--> (0 1 0 0 0 0 0)
+
+(see `push->')"
+  (let ((acc accumulate)
+        (num n)
+        (val 0))
+    (when (eq num nil)
+      (setq num vector/default-number-of-elements))
+    (when (eq i num)
+      (setq val 1))
+    (when (eq acc nil)
+      (setq acc '()))
+    (setq acc (push-> val acc))
+    (if (eq num 1)
+        acc
+      (vector/make-ith-real i (- num 1) acc))
+    ))
+
+(defun vector/make-ith (i &optional n)
+  (map-reverse 'complex/ify (vector/make-ith-real i n)))
 
 (defun vector/dot-ouch (x y &optional accu)
   "Compute the inner product and return it as `complex'.

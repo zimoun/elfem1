@@ -64,13 +64,36 @@ If BUILT-IN is not `nil', then `sqrt' is applied for any NUMBER."
     ))
 
 
-(defun math/pow-int (number power &optional accumulate)
+(defun math/pow (number power &optional accumulate)
   (let ((acc accumulate))
     (when (eq accumulate nil)
       (setq acc 1.0))
+
     (if (<= power 0)
         acc
-      (math/pow-int number (- power 1) (* number acc)))
+      (math/pow number (- power 1) (* number acc)))
     ))
 
-(defun math/exp (number))
+(defun math/fac (number &optional initial)
+  (let ((prev initial))
+    (when (eq initial nil)
+      (setq prev 1))
+    (if (<= number 0)
+        prev
+      (math/fac (- number 1) (* number prev)))
+    ))
+
+(defun apply-n-times (function n list-args initial)
+  (if (<= n 0)
+      initial
+    (apply-n-times function (- n 1) list-args
+                   (apply function (push<- list-args initial)))
+    ))
+
+(defun math/poww (number power)
+  (apply-n-times
+   '(lambda (x y) (* x y))
+   power
+   (list number)
+   1.0
+   ))

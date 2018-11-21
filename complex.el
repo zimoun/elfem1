@@ -171,5 +171,29 @@ or decrease 3 a bit, and then depth will exceed `max-lisp-eval-depth'.
       (complex/pow cplx (- n 1) (complex/mul cplx acc)))
     ))
 
+(defvar complex/exp-tolerance 1e-6
+  "Fix the maximal aboslute smallest residual of `complex/exp' (serie convergence)")
 
-(provide 'complex)
+(defun complex/exp (cplx &optional tolerance nth current)
+  (let ((cur current)
+        (n nth)
+        (tol tolerance)
+        nth-term)
+
+    (when (eq current nil)
+      (setq cur (complex 0 0)))
+    (when (eq nth nil)
+      (setq n 0))
+    (when (eq tolerance nil)
+      (setq tol complex/exp-tolerance))
+
+    (setq nth-term (complex/div
+                    (complex/pow cplx n)
+                    (math/fac n)))
+
+    (setq cur (complex/add cur nth-term))
+
+    (if (< (complex/abs nth-term) tol)
+        cur
+       (complex/exp cplx tol (+ n 1) cur))
+    ))
