@@ -1,4 +1,11 @@
 
+(require 'math)
+
+
+(defconst complex/numerical-zero 1e-5
+  "Fix the value of number that are skipped,
+because they are considered as numerical noise.")
+
 
 (defun complex (real imag)
   "Return the dotted paired list of 2 elements.
@@ -164,9 +171,6 @@ even if CPLX is purely `real' or purely `imag'-inary.
 (see `complex/abs')"
   (math/sqrt (complex/abs2 cplx)))
 
-(defconst complex/numerical-zero 1e-5
-  "Fix the value of number that are skipped,
-because they are considered as numerical noise.")
 
 (defun complex/abs (cplx)
   "Return the modulus.
@@ -279,10 +283,10 @@ or decrease 3 a bit, and then depth will exceed `max-lisp-eval-depth'.
 ;; Require the library s.el
 ;; Try install it: M-x package-install s
 ;; (require 's)
-(defun pprinter (x)
-  (let ((real (complex/real x))
-        (imag (complex/imag x)))
-    (s-lex-format "${real} + ${imag}i")))
+;; (defun pprinter (x)
+;;   (let ((real (complex/real x))
+;;         (imag (complex/imag x)))
+;;     (s-lex-format "${real} + ${imag}i")))
 
 
 (provide 'complex)

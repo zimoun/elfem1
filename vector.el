@@ -1,6 +1,6 @@
 
-(load-file "list.el")
-(load-file "complex.el")
+(require 'list)
+(require 'complex)
 
 (defconst vector/default-number-of-elements 5)
 

@@ -1,5 +1,5 @@
 
-(load-file "list.el")
+(require 'list)
 
 
 (defconst math/pi 3.141592653589793)
@@ -102,3 +102,6 @@ If BUILT-IN is not `nil', then `sqrt' is applied for any NUMBER."
    (list number)
    1.0
    ))
+
+
+(provide 'math)

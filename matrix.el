@@ -1,4 +1,8 @@
 
+(require 'list)
+(require 'complex)
+(require 'vector)
+
 (defun matrix/make-ones (&optional size accumulate rows)
   (let ((ncol size)
         (nrow rows)
@@ -248,3 +252,6 @@
                   (matrix/vector-dot A x)))
      (vector/norm b)
      ))
+
+
+(provide 'matrix)

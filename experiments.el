@@ -1,4 +1,10 @@
 
+(require 'list)
+(require 'math)
+(require 'complex)
+(require 'vector)
+(require 'matrix)
+
 (load-file "./list.el")
 (load-file "./math.el")
 (load-file "./complex.el")
