@@ -218,6 +218,11 @@ and then recursively applies itself to this new joined list with popping the res
       (if (eq nil list)
           joined
         (join joined list rest))
+      ;; should be better to use:
+      ;; (apply 'join joined list rest))
+      ;; because rest is not considered as list (or list of list)
+      ;; and not as sequence of argument, i.e., l1 l2 l3 l4.
+      ;; WARNING: `push-all' used in `join-strict' seems fixing.
     ))
 
 
@@ -312,22 +317,131 @@ Example:
 
 (setq L (list 1 2 3 4 5))
 (defun will-compute-factorial (x y) (* x y))
-(reduce 'will-compute-factorial L 1)
---> 120
-
-"
+(reduce 'will-compute-factorial L)
+--> 120"
   (let ((acc accumulate)
         (head (car list))
-        (tail (cdr list))
-        val)
-    (when (eq accumulate nil)
-      (setq acc 0.0))
+        (tail (cdr list)))
 
-    (setq val (funcall function head acc))
+    (if (eq accumulate nil)
+      (setq acc head)
+     (setq acc (funcall function head acc)))
+
     (if (eq tail nil)
-        val
-      (reduce function tail val))
+        acc
+      (reduce function tail acc))
     ))
+
+(defun list-list-reversed (list &optional accumulate)
+  "Return the listify LIST.
+
+LIST is a nil-terminated list.
+ACCUMULATE is the optionnal initial value of the loop recursion, and
+then, where the result is collected. By default set to `nil.
+Therefore, the resulting list is reversed.
+
+(see `list-list' for non-reversed).
+
+
+Example:
+
+(list-list-reversed (list 1 2 3 4))
+--> ((3) (2) (1) (4))"
+
+  (let ((acc accumulate)
+        (head (list (car list)))
+        (tail (cdr list)))
+
+    (setq acc (push-> head acc))
+    (if (eq tail nil)
+        acc
+      (list-list-reversed tail acc))
+    ))
+
+(defun list-list (list)
+    "Return the listify LIST.
+
+LIST is a nil-terminated list.
+(see `list-list-reversed')."
+  (reverse-recursive-lisp (list-list-reversed list)))
+
+
+(defun combine-strict-reversed (list1 list2 &optional accumulate ugly)
+  "Combine LIST1 and LIST2, both nil-terminated lists.
+
+The optionnal parameter ACCUMULATE recursively collects the result.
+(by default set to `nil')
+
+(see `combine-strict' for non reverse result)
+
+And UGLY is internal parameter used by `combine-reversed'.
+(by default set to `nil')
+
+
+Example:
+
+(setq l1 (list 1 2 3))
+(setq l2 (list -1 -2 -3))
+(combine-strict-reversed l1 l2)
+--> ((-3 3) (-2 2) (-1 1))
+"
+  (let ((acc accumulate)
+        (head1 (car list1))
+        (tail1 (cdr list1))
+        (head2 (car list2))
+        (tail2 (cdr list2)))
+
+    (if (eq ugly nil)
+          (setq acc (push-> (list head2 head1) acc))
+        (if (eq accumulate nil)
+            (setq acc (list (push-> head2 head1)))
+            (setq acc (push-> (push-> head2 head1) acc))))
+
+    (if (or (eq tail1 nil)
+            (eq tail2 nil))
+        acc
+      (combine-strict-reversed tail1 tail2 acc ugly))
+    ))
+
+(defun combine-strict (list1 list2)
+  "Combine LIST1 and LIST2, bot nil-terminated lists.
+
+First, apply `combine-strict-reversed'.
+Then, `reverse-recursive-lisp'."
+  (reverse-recursive-lisp (combine-strict-reversed list1 list2)))
+
+(defun combine-reversed (ugly list1 list2 &rest lists)
+  "Extension of `combine-strict-reversed' to arbitrary number of
+  lists.
+
+Do not use this function, prefer `combine'.
+
+UGLY has to be set to `nil' at the first call (intial recursion term),
+then it is internally turned to `t'. It is required by
+`combine-strict-reversed' to properly handle the edge cases."
+  (let ((combined (combine-strict-reversed list1 list2 nil ugly))
+        (list (car lists))
+        (rest (cdr lists)))
+    (if (eq list nil)
+        combined
+      (apply 'combine-reversed t (reverse-recursive-lisp combined) list rest))
+    ))
+
+(defun combine (list1 list2 &rest lists)
+  "Combine arbitrary number of nil-terminated lists.
+
+First, it applies `combine-reversed' that returns the reversed
+combined list, therefore, `reverse-recursive-lisp' is then `map'-ped,
+which reversed each element and return also reversed.
+
+Example:
+
+(setq l1 (list 1 2 3))
+(setq l2 (list -1 -2 -3))
+(combine l1 l2 l1 l2)
+--> ((1 -1 1 -1) (2 -2 2 -2) (3 -3 3 -3))"
+  (map 'reverse-recursive-lisp (apply 'combine-reversed nil list1 list2 lists)))
+
 
 
 

@@ -37,18 +37,18 @@ Robust enough to even work with interger and float datatype."
         0.0))
      )))
 
-(defun real (cplx)
+(defun complex/real (cplx)
   "Return real part. (see `complex')"
   (complex/which-part cplx 0))
 
-(defun imag (cplx)
+(defun complex/imag (cplx)
   "Return imaginary part. (see `complex')"
   (complex/which-part cplx 1))
 
-(defun conj (cplx)
+(defun complex/conj (cplx)
   "Return the conjugate of CPLX. (see `complex')"
-  (let ((a (real cplx))
-        (b (imag cplx)))
+  (let ((a (complex/real cplx))
+        (b (complex/imag cplx)))
     (complex a (- b))
     ))
 
@@ -59,10 +59,10 @@ Note that this obviously commutes.
 (complex/add a b) _equivalent_ (complex/add b a)
 
 (see `complex')"
-  (let ((ar (real a))
-        (ai (imag a))
-        (br (real b))
-        (bi (imag b)))
+  (let ((ar (complex/real a))
+        (ai (complex/imag a))
+        (br (complex/real b))
+        (bi (complex/imag b)))
     (complex (+ ar br) (+ ai bi))
     ))
 
@@ -70,8 +70,8 @@ Note that this obviously commutes.
   "Return the complex substraction: A-B.
 
 (see `complex')"
-  (let ((br (real b))
-        (bi (imag b)))
+  (let ((br (complex/real b))
+        (bi (complex/imag b)))
     (complex/add a (complex (- br) (- bi)))
     ))
 
@@ -83,10 +83,10 @@ Note that this obviously commutes.
 
 (see `complex')
 "
-  (let ((ar (real a))
-        (ai (imag a))
-        (br (real b))
-        (bi (imag b))
+  (let ((ar (complex/real a))
+        (ai (complex/imag a))
+        (br (complex/real b))
+        (bi (complex/imag b))
         )
     (complex (- (* ar br) (* ai bi))
           (+ (* ar bi) (* ai br)))
@@ -100,13 +100,13 @@ Note that this obviously commutes.
 Note that real^2 and imag^2 do not make any sense in Lisp.
 
 (see `complex' and `complex/mul' and `conj')"
-  (complex/mul cplx (conj cplx)))
+  (complex/mul cplx (complex/conj cplx)))
 
 (defun complex/abs2 (cplx)
   "Return the real squared modulus.
 
 (see `complex/cabs2' and `real')"
-  (real (complex/cabs2 cplx)))
+  (complex/real (complex/cabs2 cplx)))
 
 (defun complex/abs-naive (cplx)
   "Return the modulus.
@@ -128,8 +128,8 @@ because they are considered as numerical noise.")
 If `real' or `imag' are less than `complex/numerical-zero'
 Then return the well-adapted absolute value computed by `math/abs',
 Else apply `complex/abs-naive'."
-  (let ((re (math/abs (real cplx)))
-        (im (math/abs (imag cplx))))
+  (let ((re (math/abs (complex/real cplx)))
+        (im (math/abs (complex/imag cplx))))
     (cond
      ((< im complex/numerical-zero)
       re)
@@ -145,7 +145,7 @@ Else apply `complex/abs-naive'."
     "Return the complex multiplication: A/B.
 
 (see `complex')."
-  (let ((num (complex/mul a (conj b)))
+  (let ((num (complex/mul a (complex/conj b)))
         (inv-den (/ 1 (complex/abs2 b))))
     (complex/mul inv-den num)
     ))
