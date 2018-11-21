@@ -1,5 +1,10 @@
-(defvar math/pi 3.141592653589793)
-(defvar math/exp 2.718281828459045)
+
+(load-file "list.el")
+
+
+(defconst math/pi 3.141592653589793)
+(defconst math/-pi (- 0 math/pi))
+(defconst math/exp 2.718281828459045)
 
 (defun math/abs (number)
   "Return absolute value of the NUMBER.

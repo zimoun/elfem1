@@ -1,5 +1,8 @@
 
-(defvar vector/default-number-of-elements 5)
+(load-file "list.el")
+(load-file "complex.el")
+
+(defconst vector/default-number-of-elements 5)
 
 (defun vector/make-linspace-real (start stop &optional n accu)
   "Return linspace range from START to STOP, both included.
@@ -233,3 +236,20 @@ Example:
 
 (defun vector/get-i (vec index)
   (get-ith vec index))
+
+(defun vector/map (func x)
+  ;; incosistent between list.el and here.
+  ;; Still because map is a better name ?
+  (reverse-map func x t))
+
+
+(defun vector/map-binary (func x y)
+  (reverse-map-binary func x y t))
+
+(defun vector/add (x y)
+  (vector/map-binary 'complex/add x y))
+
+(defun vector/sub (x y)
+  (vector/map-binary 'complex/sub x y))
+
+(provide 'vector)

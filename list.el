@@ -247,23 +247,25 @@ and then recursively applies itself to this new joined list with popping the res
     ))
 
 
-(defun map (function list &optional one-elt accumulate)
-  "Map FUNCTION to LIST.
+(defun map (func list &optional one-elt accumulate)
+  "Map FUNC to LIST.
 
 The argument LIST represents a nil-terminated list.
-The argument FUNCTION needs to be a symbol of function that takes
+The argument FUNC needs to be a symbol of function that takes
 arguments and returns one element.
 
 The function recursively walks through the LIST,
-and applies FUNCTION to each element.
+and applies FUNC to each element.
 The results are collected in ACCUMULATE (by defaut set to `nil'),
 therefore, the resulting list is reversed.
 (see `map-reverse' or `reverse-map')
 
 If ONE-ELT is set to `t',
 then it allows to consider one element of LIST
-as only one object passed to FUNCTION,
-else, as expanded elements passed to FUNCTION.
+as only one object passed to FUNC,
+else, as expanded elements passed to FUNC.
+The `complex' data structure is a 2-list,
+therefore ONE-ELT is set to `t' for this use case.
 (by defaut set to `nil')
 
 Example:
@@ -273,7 +275,7 @@ Example:
 (map '+one L)
 --> (5 4 3 2 1)
 
-(setq ll (list (list 1 2) (list 2 3) (list 3 4) (list 4 5))
+(setq ll (list (list 1 2) (list 2 3) (list 3 4) (list 4 5)))
 (map '(lambda (x) (push-> 42 x)) ll t)
 --> ((42 4 5) (42 3 4) (42 2 3) (42 1 2))
 
@@ -286,20 +288,20 @@ Example:
 
      (if (listp head)
        (if (eq one-elt nil)
-          (setq val (apply function head))
-         (setq val (funcall function head)))
-       (setq val (funcall function head)))
+          (setq val (apply func head))
+         (setq val (funcall func head)))
+       (setq val (funcall func head)))
 
     (setq ret (push-> val acc))
     (setq acc ret)
 
     (if (eq tail nil)
         acc
-      (map function tail one-elt acc))
+      (map func tail one-elt acc))
     ))
 
-(defun map-reverse (function list &optional one-elt)
-  "Map FUNCION to LIST.
+(defun map-reverse (func list &optional one-elt)
+  "Map FUNC to LIST.
 
 First, `reverse-recursive-lisp' is applied.
 Second, `map' is applied.
@@ -314,10 +316,10 @@ Example:
 (defun +one (x) (+ x 1))
 (map-reverse '+one L)
 --> (1 2 3 4 5)"
-  (map function (reverse-recursive-lisp list) one-elt))
+  (map func (reverse-recursive-lisp list) one-elt))
 
-(defun reverse-map (function list)
-  "Map FUNCION to LIST.
+(defun reverse-map (func list &optional one-elt)
+  "Map FUNC to LIST.
 
 First, `map' is applied.
 Second, `reverse-recursive-lisp' is applied.
@@ -333,20 +335,20 @@ Example:
 (defun +one (x) (+ x 1))
 (reverse-map '+one L)
 --> (1 2 3 4 5)"
-  (reverse-recursive-lisp (map function list)))
+  (reverse-recursive-lisp (map func list one-elt)))
 
 
 
-(defun reduce (function list &optional accumulate)
-  "Reduce LIST by FUNCTION.
+(defun reduce (func list &optional accumulate)
+  "Reduce LIST by FUNC.
 
 The argument LIST represents a nil-terminated list.
-The argument FUNCTION needs to be a symbol of function that takes two
+The argument FUNC needs to be a symbol of function that takes two
 arguments and returns one element.
 
 The function recursively walks through the LIST,
 and applies to each element of LIST:
- (FUNCTION element ACCCUMALTE)
+ (FUNC element ACCCUMALTE)
 where the result is then collected in ACCUMULATE.
 (by default ACCUMULATE is set to 0.0)
 
@@ -363,11 +365,11 @@ Example:
 
     (if (eq accumulate nil)
       (setq acc head)
-     (setq acc (funcall function head acc)))
+     (setq acc (funcall func head acc)))
 
     (if (eq tail nil)
         acc
-      (reduce function tail acc))
+      (reduce func tail acc))
     ))
 
 (defun list-list-reversed (list &optional accumulate)
@@ -498,6 +500,75 @@ Example:
 
 
 
+(defun map-binary (func list1 list2 &optional one-elt accumulate)
+  "Same as `map' for binary functions FUNC.
+
+
+Example:
+
+(setq l1 (list 0 1 2 3 4))
+(setq l2 (list 0 -1 -2 -3 -4))
+(map-binary '(lambda (x y) (+ x y)) l1 l2)
+(map-binary '+ l1 l2)
+--> (0 0 0 0 0)
+
+(map-binary '- l1 l2)
+--> (8 6 4 2 0)"
+  (let ((acc accumulate)
+        (head1 (car list1))
+        (tail1 (cdr list1))
+        (head2 (car list2))
+        (tail2 (cdr list2))
+        ret val)
+
+    (if (and (listp head1) (listp head2))
+        (if (eq one-elt nil)
+          (setq val (apply func head1 head2))
+         (setq val (funcall func head1 head2)))
+       (setq val (funcall func head1 head2)))
+
+    (setq ret (push-> val acc))
+    (setq acc ret)
+
+    (if (and (eq tail1 nil) (eq tail2 nil))
+        acc
+      (map-binary func tail1 tail2 one-elt acc))
+    ))
+
+
+(defun map-binary-reverse (func list1 list2 &optional one-elt accumulate)
+  "
+
+Example:
+
+(setq l1 (list 0 1 2 3 4))
+(setq l2 (list 0 -1 -2 -3 -4))
+(map-binary-reverse '(lambda (x y) (+ x y)) l1 l2)
+(map-binary-reverse '+ l1 l2)
+--> (0 0 0 0 0)
+
+(map-binary-reverse '- l1 l2)
+--> (0 2 4 6 8)"
+  (map-binary func
+              (reverse-recursive-lisp list1)
+              (reverse-recursive-lisp list2)
+              one-elt accumulate))
+
+(defun reverse-map-binary (func list1 list2 &optional one-elt accumulate)
+  "
+
+Example:
+
+(setq l1 (list 0 1 2 3 4))
+(setq l2 (list 0 -1 -2 -3 -4))
+(reverse-map-binary '(lambda (x y) (+ x y)) l1 l2)
+(reverse-map-binary '+ l1 l2)
+--> (0 0 0 0 0)
+
+(reverse-map-binary '- l1 l2)
+--> (0 2 4 6 8)"
+  (reverse-recursive-lisp (map-binary func list1 list2 one-elt accumulate)))
+
 ;;;;;;;;;;;
 ;;;;;;;;;;;
 ;;;;;;;;;;;
@@ -533,6 +604,7 @@ and the remains the GLOBAL scope."
     ;; be careful !!
     ;; the function `tmp/compare' is GLOBAL
     ;; and remains in the scoping (see `dynamical binding')
+    ;; WARNING: elint does not like.
     (makunbound 'tmp/compare)
     (if (eq nil cmp)
         (setq tmp/compare (lambda (x y) (increase x y)))

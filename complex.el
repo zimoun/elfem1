@@ -17,16 +17,51 @@ and IMAG _is_ (cdr (complex REAL IMAG))).
 ;;   "See `complex'"
 ;;   (complex real 0))
 
-(defun complex/ify (number)
-  (let ((typeof (type-of number)))
+(defun complex? (number)
+    (let ((typeof (type-of number)))
     (cond
      ((eq typeof 'cons)
-      number)
+      t)
      ((or
       (eq typeof 'integer)
       (eq typeof 'float))
-      (complex (float number) 0))
+      nil)
     )))
+
+(defalias 'complex-p 'complex?)
+
+(defun complex/ify (number)
+  (if (complex-p number)
+      number
+    (complex number 0)))
+
+(defun complex/ify--trigo (number)
+  "Return NUMBER as `complex' with imag-part only.
+
+If NUMBER is already `complex',
+then if real-part of NUMBER is smaller than 0 (`complex/numerical-zero'),
+     then NUMBER becomes `complex' 0 real-part,
+     else NUMBER becomes `complex' 0 imag-part;
+else NUMBER is complexified with imag-part.
+
+Therefore, be careful when the real-part and the imag-part of x are both greater than 0.
+"
+  (let (real imag x y)
+    (if (complex-p number)
+        (progn
+          (setq real (complex/real number))
+          (setq imag (complex/imag number))
+          (if (< (math/abs real) complex/numerical-zero)
+              (setq x imag)
+            (setq x real)))
+      (setq x number))
+    ;; Add modulo
+    (if (> x math/pi)
+        (setq y (- x (* 2 math/pi)))
+      (setq y x))
+    y
+    ))
+
 
 (defun complex/which-part (cplx i)
   "Generic function used by `real' or `imag'.
@@ -129,7 +164,7 @@ even if CPLX is purely `real' or purely `imag'-inary.
 (see `complex/abs')"
   (math/sqrt (complex/abs2 cplx)))
 
-(defvar complex/numerical-zero 1e-5
+(defconst complex/numerical-zero 1e-5
   "Fix the value of number that are skipped,
 because they are considered as numerical noise.")
 
@@ -208,5 +243,46 @@ or decrease 3 a bit, and then depth will exceed `max-lisp-eval-depth'.
         cur
        (complex/exp cplx tol (+ n 1) cur))
     ))
+
+(defun complex/sin (x &optional tolerance nth current)
+  "Return the complexified sine of X.
+"
+  (complex/ify
+   (complex/imag
+    (complex/exp
+     (complex/ify--trigo x)
+     tolerance nth current))))
+
+(defun complex/cos (x &optional tolerance nth current)
+  "Return the complexified cosine of X.
+"
+  ;; FIXME: do not work for x > 5 ??
+  (complex/ify
+   (complex/real
+    (complex/exp
+     (complex/ify--trigo x)
+     tolerance nth current))))
+
+(defun one? (x)
+  (let* ((cosine (complex/cos x))
+         (sine (complex/sin x))
+         (cos2 (complex/mul cosine cosine))
+         (sin2 (complex/mul sine sine))
+         (one (complex/add cos2 sin2))
+         (zero (complex/sub one 1)))
+    (if (< (complex/abs zero) complex/numerical-zero)
+        t
+      nil)
+    ))
+
+
+;; Require the library s.el
+;; Try install it: M-x package-install s
+;; (require 's)
+(defun pprinter (x)
+  (let ((real (complex/real x))
+        (imag (complex/imag x)))
+    (s-lex-format "${real} + ${imag}i")))
+
 
 (provide 'complex)

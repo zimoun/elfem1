@@ -54,7 +54,7 @@
     ))
 
 (defun matrix/make-laplacian-complex (&optional size accumulate rows)
-  "Need refoctorization"
+  "Need refactorization"
   (let ((ncol size)
         (nrow rows)
         (acc accumulate)
@@ -175,6 +175,8 @@
         (matrix/square? (cdr A) (+ nrow 1) ncol)))
     ))
 
+(defalias 'matrix/square-p 'matrix/square?)
+
 (defun matrix/vector-solve (A b)
   (let ((Mat (matrix/vector-cat A b))
         den num scale
@@ -238,3 +240,11 @@
         ))
       x
     ))
+
+
+(defun matrix/solver-residu (A x b)
+  (/ (vector/norm
+      (vector/sub b
+                  (matrix/vector-dot A x)))
+     (vector/norm b)
+     ))
